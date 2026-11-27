@@ -1,0 +1,10 @@
+[
+  {"message": "What is the current stock of Laptop?", "expected_route": "inventory"},
+  {"message": "Donne-moi le prix du Keyboard", "expected_route": "inventory"},
+  {"message": "Forecast demand for Laptop next week", "expected_route": "forecast"},
+  {"message": "Est-ce que RDD 2 risque une rupture de stock ?", "expected_route": "forecast"},
+  {"message": "I would like 2 Monitors", "expected_route": "client_portal"},
+  {"message": "Je veux un devis pour 3 Keyboard", "expected_route": "client_portal"},
+  {"message": "What is the return policy?", "expected_route": "knowledge"},
+  {"message": "Quelles sont les conditions de livraison ?", "expected_route": "knowledge"}
+]

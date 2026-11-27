@@ -1,0 +1,23 @@
+# Secrets and local environments
+.env
+admin_compte.txt
+.venv/
+venv/
+
+# Python caches and tooling
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Local chatbot index and observability data
+backend/agentic_chat/data/*.sqlite3
+backend/agentic_chat/data/observability.jsonl
+
+# Generated quotation PDFs
+documents/quotation_*.pdf
+
+
+#commandes powershell
+powerShell.txt
+

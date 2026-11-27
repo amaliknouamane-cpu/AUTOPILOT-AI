@@ -1,0 +1,476 @@
+{
+  "name": "AUTOPILOT AI",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        192
+      ],
+      "id": "45c3e7ea-f458-4d84-83e1-36a81ac5542e",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:8001/health",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        192
+      ],
+      "id": "5e1e26bc-66b8-4379-ab0b-5fae43eaa92e",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8001/quotes",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.body }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        720,
+        192
+      ],
+      "id": "1bad52c5-9ca0-4acc-b899-aaf15192c64a",
+      "name": "HTTP Request1",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "quotation_request",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        192
+      ],
+      "id": "b531989b-229c-4d61-8577-3b8ea91b5293",
+      "name": "Webhook",
+      "webhookId": "f163a889-be3b-4de4-930f-57a0997012d2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "f7a7e45f-672d-4965-bd75-7c698988b5c7",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        1392,
+        192
+      ],
+      "id": "90217acf-b2f2-4652-8e0a-e8fc4094dc58",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').item.json.body.customer_email }}",
+        "subject": "=AutoPilot AI | Your Quotation - {{ $('Webhook').item.json.body.customer_name }}",
+        "message": "=\n<div style=\"font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:25px;color:#1f2937;\">\n  <h2 style=\"color:#2563eb;\">AUTOPILOT AI</h2>\n  <h3>Your quotation is ready</h3>\n\n  <p>Dear {{ $('HTTP Request1').first().json.customer }},</p>\n\n  <p>Your quotation has been reviewed and approved. Here are the details:</p>\n\n  <table style=\"width:100%;border-collapse:collapse;\">\n    <tr>\n      <th align=\"left\">Product</th>\n      <th align=\"center\">Quantity</th>\n      <th align=\"right\">Subtotal</th>\n    </tr>\n    {{ $('HTTP Request1').first().json.items.map(item => `<tr><td style=\"padding:10px 0;border-bottom:1px solid #ddd;\">${item.product_name}</td><td align=\"center\">${item.quantity}</td><td align=\"right\">${item.subtotal.toLocaleString()} MAD</td></tr>`).join('') }}\n  </table>\n\n  <h2 style=\"color:#2563eb;\">Total: {{ $('HTTP Request1').first().json.total }} MAD</h2>\n\n  <p>Thank you for choosing us.</p>\n  <p><strong>AutoPilot AI</strong><br>Automated Commercial Operations</p>\n</div>\n",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2336,
+        48
+      ],
+      "id": "518eb9b8-881a-4953-8343-178583ecc54b",
+      "name": "Send a message",
+      "webhookId": "383aecc5-fae2-4f40-860f-0e8f81d351a9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "5E8NljG8GNq3mMKj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "amaliknouamane@gmail.com",
+        "subject": "AutoPilot AI - Quotation Approval Required",
+        "message": "=\n<div style=\"margin:0;padding:30px;background:#f1f5f9;font-family:Arial,sans-serif;\">\n  <div style=\"max-width:600px;margin:auto;background:#ffffff;border-radius:14px;overflow:hidden;\">\n\n    <!-- HEADER -->\n    <div style=\"background:#101827;padding:30px;color:#ffffff;\">\n      <h2 style=\"margin:0;letter-spacing:2px;\">AUTOPILOT AI</h2>\n      <p style=\"color:#a5b4fc;font-size:12px;\">\n        INTELLIGENT BUSINESS AUTOMATION\n      </p>\n      <div style=\"height:2px;background:#2563eb;margin-top:20px;\"></div>\n    </div>\n\n    <!-- CONTENT -->\n    <div style=\"padding:30px;\">\n\n      <p style=\"color:#2563eb;font-size:12px;font-weight:bold;\">\n        QUOTATION NOTIFICATION\n      </p>\n\n      <h1 style=\"color:#111827;font-size:25px;\">\n        Approval required\n      </h1>\n\n      <p style=\"color:#64748b;line-height:1.7;\">\n        A new quotation has been generated successfully.\n        Please review the details below before authorizing\n        its delivery to the customer.\n      </p>\n\n      <!-- CUSTOMER AND QUOTATION -->\n      <div style=\"background:#f8fafc;padding:20px;border-radius:10px;margin:25px 0;\">\n\n        <p style=\"color:#64748b;font-size:12px;margin:0;\">\n          CUSTOMER\n        </p>\n\n        <h3 style=\"color:#111827;margin:8px 0;\">\n          {{ $json.customer }}\n        </h3>\n\n        <p style=\"color:#64748b;font-size:12px;margin-top:20px;\">\n          QUOTATION DETAILS\n        </p>\n\n        <table style=\"width:100%;border-collapse:collapse;\">\n          <tr>\n            <th align=\"left\" style=\"padding:10px 0;color:#64748b;border-bottom:1px solid #e2e8f0;\">Product</th>\n            <th align=\"center\" style=\"padding:10px 0;color:#64748b;border-bottom:1px solid #e2e8f0;\">Qty</th>\n            <th align=\"right\" style=\"padding:10px 0;color:#64748b;border-bottom:1px solid #e2e8f0;\">Subtotal</th>\n          </tr>\n\n          {{ $json.items.map(item => `<tr><td style=\"padding:12px 0;border-bottom:1px solid #e2e8f0;color:#334155;\">${item.product_name}</td><td align=\"center\" style=\"padding:12px 0;border-bottom:1px solid #e2e8f0;\">${item.quantity}</td><td align=\"right\" style=\"padding:12px 0;border-bottom:1px solid #e2e8f0;\">${item.subtotal.toLocaleString()} MAD</td></tr>`).join('') }}\n        </table>\n\n        <div style=\"border-top:2px solid #e2e8f0;margin-top:20px;padding-top:15px;\">\n          <p style=\"color:#64748b;font-size:12px;\">\n            TOTAL AMOUNT\n          </p>\n\n          <h2 style=\"color:#2563eb;margin:5px 0;\">\n            {{ $json.total }} {{ $json.currency }}\n          </h2>\n        </div>\n      </div>\n\n      <!-- ACTION NOTICE -->\n      <div style=\"background:#eff6ff;padding:16px;border-radius:8px;\">\n        <strong style=\"color:#1d4ed8;\">\n          Action required\n        </strong>\n\n        <p style=\"color:#475569;font-size:13px;line-height:1.6;\">\n          Please review this quotation and approve or reject it\n          before it is sent to the customer.\n        </p>\n      </div>\n\n      <!-- APPROVAL BUTTONS -->\n      <div style=\"text-align:center;margin:35px 0;\">\n\n        <a href=\"{{ $execution.resumeUrl }}&amp;approved=true\"\n           style=\"background:#16a34a;color:#ffffff;padding:15px 25px;text-decoration:none;border-radius:8px;font-weight:bold;display:inline-block;margin:8px;\">\n          APPROVE QUOTATION\n        </a>\n\n        <a href=\"{{ $execution.resumeUrl }}&amp;approved=false\"\n           style=\"background:#dc2626;color:#ffffff;padding:15px 25px;text-decoration:none;border-radius:8px;font-weight:bold;display:inline-block;margin:8px;\">\n          REJECT QUOTATION\n        </a>\n\n      </div>\n\n      <!-- FOOTER -->\n      <p style=\"color:#94a3b8;font-size:12px;text-align:center;margin-top:30px;\">\n        Powered by AutoPilot AI<br/>\n        Automated Commercial Operations\n      </p>\n\n    </div>\n  </div>\n</div>\n",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "disapproveLabel": "Reject"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1024,
+        192
+      ],
+      "id": "2512581f-4d6c-4136-8b64-fc391e863315",
+      "name": "Send message and wait for response",
+      "webhookId": "acd98dec-a585-4c43-85e0-395bb8334372",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "5E8NljG8GNq3mMKj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fileSelector": "={{ $('HTTP Request1').item.json.pdf_path }}",
+        "options": {
+          "dataPropertyName": "data"
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        1984,
+        0
+      ],
+      "id": "9e0b1f1e-adba-4be8-af4e-b4c4dda4def6",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').first().json.body.customer_email }}",
+        "subject": "Your quotation request has been declined !",
+        "message": "={{\n'<div style=\"font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:30px;border:1px solid #ddd;border-radius:10px;color:#333;\">' +\n'<h2 style=\"color:#c0392b;text-align:center;\">Quotation Request Update</h2>' +\n'<p>Dear ' + $('Webhook').first().json.body.customer_name + ',</p>' +\n'<p>Thank you for choosing AutoPilot AI and submitting your quotation request.</p>' +\n'<p>After reviewing your request, we regret to inform you that your quotation has not been approved.</p>' +\n'<p>If you need further information or would like to discuss your request, please contact our team.</p>' +\n'<p>Best regards,<br><strong>AutoPilot AI Team</strong></p>' +\n'<hr style=\"border:none;border-top:1px solid #ddd;\">' +\n'<p style=\"color:#888;text-align:center;\">This is an automated notification from AutoPilot AI.</p>' +\n'</div>'\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2208,
+        560
+      ],
+      "id": "978eb34e-def4-4653-a8af-0cf8117eb6c6",
+      "name": "Send a message1",
+      "webhookId": "c74db18b-5ed4-4db1-a37d-31ccb88667a9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "5E8NljG8GNq3mMKj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').first().json.body.customer_email }}",
+        "subject": "Unable to process your quotation request",
+        "message": "={{ 'Dear Customer, we could not process your quotation request. Reason: ' + (typeof $json.error === 'string' ? $json.error : ($json.error?.message || $json.details?.description || $json.message || 'Unknown error')) + '. Please check your request and try again. Best regards, AutoPilot AI Team.' }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1072,
+        496
+      ],
+      "id": "e63befd6-9ce5-4f42-9749-3d4f4e37de97",
+      "name": "Send a message2",
+      "webhookId": "c106e2df-8dd3-4a06-bc03-7a6957405260",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "5E8NljG8GNq3mMKj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://127.0.0.1:8001/quotes/' + $('HTTP Request1').first().json.quote_id + '/approve' }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1600,
+        0
+      ],
+      "id": "1a9e4830-8645-4031-af40-049e1b3d101c",
+      "name": "HTTP Request2",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://127.0.0.1:8001/quotes/' + $('HTTP Request1').first().json.quote_id + '/reject' }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1744,
+        528
+      ],
+      "id": "dc626489-d0e1-4b1f-9721-83292a69fb3b",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').first().json.body.customer_email }}",
+        "subject": "Quotation approval failed - AutoPilot AI",
+        "emailType": "text",
+        "message": "={{ 'Dear Customer, your quotation was approved by our team, but we could not finalize it because of an error during stock deduction. Reason: ' + ($json.error?.message || $json.message || 'Unknown error') + '. Please contact our team. Best regards, AutoPilot AI Team.' }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1840,
+        208
+      ],
+      "id": "4b14ce23-9d73-4b36-a383-b383be7982a2",
+      "name": "Send a message3",
+      "webhookId": "b6f6f51c-f485-46be-b5f3-332bc8541c7b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "5E8NljG8GNq3mMKj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dashboard-rejection",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        64,
+        544
+      ],
+      "id": "ca1b7d2c-d850-48d2-9d48-2cda82c0d447",
+      "name": "Webhook1",
+      "webhookId": "635b96dd-179f-405d-aba6-72b069f78d31"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://127.0.0.1:8001/quotes/' + $json.body.quote_id + '/reject' }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        432,
+        656
+      ],
+      "id": "0c25bcb1-a146-4f1b-9e98-377a46142c93",
+      "name": "HTTP Request4"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook1').first().json.body.customer_email }}",
+        "subject": "Quotation Request Update - Rejected",
+        "message": "=<div style=\"font-family: Arial, sans-serif; padding: 20px; color: #333;\">\n    <h2 style=\"color: #d93025;\">Quotation Request Update</h2>\n    <p>Dear {{ $('Webhook1').first().json.body.customer_name }},</p>\n    <p>Your quotation \n    <strong>{{ $('Webhook1').first().json.body.quote_id }}</strong>\n    has been rejected.</p>\n    <p>If you need further information, please contact our team.</p>\n    <p>Best regards,<br><strong>AutoPilot AI Team</strong></p>\n</div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        752,
+        816
+      ],
+      "id": "0f174fed-b0d3-4c68-ab79-3f59c043d9cf",
+      "name": "Send a message4",
+      "webhookId": "0d15ce1b-ef43-4804-ab6b-c55c83afa857",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "5E8NljG8GNq3mMKj",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Send message and wait for response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request4": {
+      "main": [
+        [
+          {
+            "node": "Send a message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "3757aec5-052b-4e18-bfce-6685f2343b63",
+  "meta": {
+    "instanceId": "315e6670a0b4ba2c740bb9ff21eca8f810f5acf91d4fbcfff9a2f6ec659e0ff6"
+  },
+  "nodeGroups": [],
+  "id": "6h3uPmFgaAIpecrI",
+  "tags": []
+}

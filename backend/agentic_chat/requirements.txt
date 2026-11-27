@@ -1,0 +1,6 @@
+psycopg[binary]>=3.2
+python-dotenv>=1.0
+requests>=2.32
+mcp>=1.26
+langgraph>=1.0
+pypdf>=5.0
